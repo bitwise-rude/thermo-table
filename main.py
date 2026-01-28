@@ -4,7 +4,7 @@
 # --------------------------
 import tkinter as tk
 import json
-
+from dataclasses import dataclass
 
 # --------------------------
 FILE_1 = "data/com_liq_sup_steam.json"  # COMPRESSED LIQUID and SUPERHEATED STEAM
@@ -16,6 +16,22 @@ com_sup = sat_pres = sat_temp = None
 
 
 # -------------------------
+@dataclass
+class SuperResult:
+    p : float
+    t : float
+    v : float
+    e : float
+    ph : str
+
+    ''' Stores the result from Super heated condition
+        p -> Pressure
+        t -> Temperature
+        v -> Specific Volume
+        e -> Enthalpy
+        ph -> Phase
+    '''
+
 class Window(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -35,13 +51,18 @@ class Window(tk.Tk):
             vals = (sup_pre.get(), super_temp.get(), super_vol.get())
 
             found = None
+            results: list[SuperResult] = []
 
             for  i, val in enumerate(vals):
                 try:
                     val_f  = float(val)
-                    if  i ==  0:  get_superheated_from_pressure(val_f) 
+
+                    if  i ==  0:  results = get_superheated_from_pressure(val_f)
+                    break
+
                 except ValueError:
                     continue
+            print(results)
 
         lf1 = tk.LabelFrame(text="SuperHeated Steam")
         lf1.pack()
@@ -84,14 +105,21 @@ def load_json() -> tuple[dict]:
 
     return com_sup, sat_pres, sat_temp
 
-def get_superheated_from_pressure(val:float) -> None:
+def get_superheated_from_pressure(val:float) -> list[SuperResult]:
     ''' From the chart, gets the value of superheated from pressure'''
+    results: list[SuperResult] = []
+
     for p_data in com_sup['data']:
         if p_data[0] == val:
-            print("FOUND")
-            print(p_data[1])
+            results.append(SuperResult(
+                p_data[0],
+                p_data[1],
+                p_data[2],
+                p_data[-3],
+                p_data[-1]
+            ))
 
-
+    return results
 
 if __name__ == "__main__":
     main()
