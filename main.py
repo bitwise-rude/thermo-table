@@ -11,6 +11,8 @@ FILE_1 = "data/com_liq_sup_steam.json"  # COMPRESSED LIQUID and SUPERHEATED STEA
 FILE_2 = "data/sat_pres.json" # SATURATED WATER BY PRESSURE
 FILE_3 = "data/sat_temp.json" # SATURATED WATER BY TEMPERATURE
 
+# These are global values containing table data, will be updated later
+com_sup = sat_pres = sat_temp = None
 
 
 # -------------------------
@@ -29,23 +31,42 @@ class Window(tk.Tk):
                  font= ("Arial", 16)).pack()
 
         # Super Heated Steam    
+        def btn_fn_superheated() -> None:
+            vals = (sup_pre.get(), super_temp.get(), super_vol.get())
+
+            found = None
+
+            for  i, val in enumerate(vals):
+                try:
+                    val_f  = float(val)
+                    if  i ==  0:  get_superheated_from_pressure(val_f) 
+                except ValueError:
+                    continue
+
         lf1 = tk.LabelFrame(text="SuperHeated Steam")
         lf1.pack()
 
-        tk.Label(lf1, text= "Enter Pressure").pack()
+        tk.Label(lf1, text= "Enter Pressure (MPa)").pack()
         sup_pre= tk.Entry(lf1)
         sup_pre.pack(pady=10)
 
-        tk.Label(lf1, text= "Enter Temperature").pack()
+        tk.Label(lf1, text= "Enter Temperature (°C)").pack()
         super_temp= tk.Entry(lf1)
         super_temp.pack()
 
-        tk.Button(lf1, text="Find").pack(pady=10)
+        tk.Label(lf1, text= "Enter Specific Volume (m^3/kg)").pack()
+        super_vol= tk.Entry(lf1)
+        super_vol.pack()
+
+
+        tk.Button(lf1, text="Find",command=btn_fn_superheated).pack(pady=10)
 
 
 
 # ----------------------
 def main() -> None:
+    global com_sup, sat_pres, sat_temp
+
     com_sup, sat_pres, sat_temp = load_json()
 
     win = Window()
@@ -62,6 +83,15 @@ def load_json() -> tuple[dict]:
         sat_temp = json.load(file)
 
     return com_sup, sat_pres, sat_temp
+
+def get_superheated_from_pressure(val:float) -> None:
+    ''' From the chart, gets the value of superheated from pressure'''
+    for p_data in com_sup['data']:
+        if p_data[0] == val:
+            print("FOUND")
+            print(p_data[1])
+
+
 
 if __name__ == "__main__":
     main()
